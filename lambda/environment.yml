@@ -1,0 +1,29 @@
+name: routingenv
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+ - python=3.9
+ - numpy
+ - pandas
+ - kerchunk
+ - xarray
+ - fsspec
+ - s3fs=2022.11.0
+ - holoviews 
+ - geoviews 
+ - hvplot 
+ - dask 
+ - boto3 
+ - cartopy 
+ - pip 
+ - zarr
+ - geopy
+ - requests
+ - aiohttp
+ - cfgrib
+ - numcodecs
+ - pip:
+   - git+https://github.com/peterm790/weather_routing
+   - awslambdaric
+   - wurlitzer
