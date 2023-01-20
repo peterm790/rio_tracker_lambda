@@ -85,7 +85,7 @@ def handler(event, context):
     year = data[name]['time'].year
     month = data[name]['time'].month
     day = data[name]['time'].day
-    hour = data[name]['time'].hour
+    hour = data[name]['time'].day - 2 #correct to utc
     max_days = 12
     boat_pos = data[name]['position']
     start = (RaceSetup['course']['nodes'][0]['lat'], RaceSetup['course']['nodes'][0]['lon'])
@@ -231,7 +231,7 @@ def handler(event, context):
 
     eta = route_df.index[-1] + datetime.timedelta(hours = get_eta_from_last(route_df))
 
-    elapsed = eta - datetime.datetime(2023,1,2,14)
+    elapsed = eta - datetime.datetime(2023,1,2,12)
 
     elapsed_seconds = elapsed.days*(24*60*60)+elapsed.seconds
     elapsed_seconds_corrected = elapsed_seconds*np.float64(data[name]['handicap'])

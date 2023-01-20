@@ -63,10 +63,32 @@ class RioTrackerLambdaStack(Stack):
             )
         )
         
+        #this is the lambda that checks if the first attempt worked and if not retries
+        trigger_checker = PythonFunction(
+            self,
+            id = "RioTrackerTriggers_doublecheck",
+            runtime=_lambda.Runtime.PYTHON_3_9,
+            index = "trigger_checker.py",
+            handler = "handler",
+            entry = "trigger_double_check/",
+            role = role,
+            timeout = Duration.minutes(1),
+            memory_size=200
+        )
+        # type: ignore
+
+        # Grant the function permission to write to CloudWatch Logs
+        trigger_checker.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
+                resources=["arn:aws:logs:*:*:*"]
+            )
+        )
         
         bucket = s3.Bucket(self, "Cape2RioTracking_Bucket")
         bucket.grant_read_write(lambda_routing)
         bucket.grant_read_write(lambda_trigger)
+        bucket.grant_read_write(trigger_checker)
 
 
         lambda_routing.add_event_source(S3EventSource(bucket,
