@@ -85,7 +85,7 @@ def handler(event, context):
     year = data[name]['time'].year
     month = data[name]['time'].month
     day = data[name]['time'].day
-    hour = data[name]['time'].day - 2 #correct to utc
+    hour = data[name]['time'].hour - 2 #correct to utc
     max_days = 12
     boat_pos = data[name]['position']
     start = (RaceSetup['course']['nodes'][0]['lat'], RaceSetup['course']['nodes'][0]['lon'])
@@ -223,8 +223,8 @@ def handler(event, context):
     def get_eta_from_last(route_df):
         dist_left = geopy.distance.great_circle(route_df.iloc[-1].pos, end).nm
         speed = pol.getSpeed(route_df.iloc[-1].tws,np.abs(route_df.iloc[-1].twa))
-        if speed <1.5:
-            speed = 1.5
+        if speed < 4:
+            speed = 4
         return dist_left/speed
 
     get_eta_from_last(route_df)
