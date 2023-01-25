@@ -1,5 +1,6 @@
 import fsspec
 import datetime
+import json
 
 def handler(event, context):
     fs = fsspec.filesystem('s3')

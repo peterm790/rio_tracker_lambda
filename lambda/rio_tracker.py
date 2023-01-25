@@ -80,6 +80,32 @@ def handler(event, context):
         data[x['name']]['position'] = (tracks[i]['moments'][0]['lat'], tracks[i]['moments'][0]['lon'])
         data[x['name']]['time'] = datetime.datetime.fromtimestamp(tracks[i]['moments'][0]['at'])
         data[x['name']]['track'] = tracks[i]['moments']
+        try:
+            data[x['name']]['finishedAt'] = RaceSetup['teams'][i]['finishedAt']
+        except:
+            pass
+
+    #if a boat has finished the routing will fail so here I quickly write the actual finish time to the json
+    try:
+        eta = datetime.datetime.fromtimestamp(data[name]['finishedAt'])
+        fs = fsspec.filesystem('s3')
+        print(name, '- is finished')
+        finished = 'true'
+        elapsed = eta - datetime.datetime(2023,1,2,12)
+        elapsed_seconds = elapsed.days*(24*60*60)+elapsed.seconds
+        elapsed_seconds_corrected = elapsed_seconds*np.float64(data[name]['handicap'])
+        corrected = str(datetime.timedelta(seconds = elapsed_seconds_corrected))
+        estimates = {}
+        estimates['name'] = name
+        estimates['eta'] = str(eta)
+        estimates['ORC'] = data[name]['handicap']
+        estimates['elapsed'] = str(elapsed)
+        estimates['corrected'] = str(corrected)
+        estimates['finished'] = finished
+        with fs.open(f"s3://riotrackerlambdastack-cape2riotrackingbucket493cd-ax0w0veyvbks/results/{file_name}.json", 'w') as f:
+            json.dump(estimates, f)
+    except:
+        pass
 
     #parameters
     year = data[name]['time'].year
@@ -227,12 +253,8 @@ def handler(event, context):
             speed = 4
         return dist_left/speed
 
-    get_eta_from_last(route_df)
-
     eta = route_df.index[-1] + datetime.timedelta(hours = get_eta_from_last(route_df))
-
     elapsed = eta - datetime.datetime(2023,1,2,12)
-
     elapsed_seconds = elapsed.days*(24*60*60)+elapsed.seconds
     elapsed_seconds_corrected = elapsed_seconds*np.float64(data[name]['handicap'])
     corrected = str(datetime.timedelta(seconds = elapsed_seconds_corrected))
@@ -244,6 +266,7 @@ def handler(event, context):
     estimates['ORC'] = data[name]['handicap']
     estimates['elapsed'] = str(elapsed)
     estimates['corrected'] = str(corrected)
+    estimates['finished'] = 'false'
 
     with fs.open(f"s3://riotrackerlambdastack-cape2riotrackingbucket493cd-ax0w0veyvbks/results/{file_name}.json", 'w') as f:
         json.dump(estimates, f)
